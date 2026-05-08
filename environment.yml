@@ -1,0 +1,23 @@
+name: univad 
+channels: 
+  - pytorch 
+  - conda-forge 
+  - defaults 
+dependencies: 
+  - python=3.9 
+  - pip 
+  - pip: 
+    - torch==2.2.0 
+    - torchvision==0.17.0 
+    - transformers==4.57.6 
+    - timm==1.0.26 
+    - scikit-learn 
+    - scipy 
+    - numpy==1.26.4 
+    - Pillow 
+    - opencv-python 
+    - tqdm 
+    - PyYAML 
+    - einops 
+    - faiss-cpu 
+    - matplotlib 
