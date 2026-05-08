@@ -14,7 +14,7 @@ End-to-end reproduction of UniVAD, the first model that is simultaneously source
 
 The model operates through three modules. C³ (Contextual Component Clustering) combines Grounded SAM with K-means clustering to segment object components under few-shot conditions. CAPM (Component-Aware Patch Matching) restricts patch-level feature matching to within-component regions, eliminating false positives from background and irrelevant regions. GECM (Graph-Enhanced Component Modeling) builds a graph over component features and uses geometric and deep features jointly to catch logical anomalies, missing parts, wrong colors, incorrect counts that patch matching alone cannot detect.
 
-This is the seventh reproduction in a series I'm building toward **CTTA-AD**, a continual test-time adaptation framework for unified few-shot VAD. UniVAD is the frozen base model in CTTA-AD. Reproducing it cleanly here establishes the static baseline numbers against which online adaptation gains will be measured.
+This is the fifth reproduction in a series covering UniVAD's full comparison set. UniVAD is the current state-of-the-art training-free unified VAD model and the natural endpoint of this series. Every earlier reproduction (PatchCore, WinCLIP, UniAD, MedCLIP) is a method UniVAD directly compares against in the paper. Getting clean numbers on all of them in one place makes the comparison meaningful. The remaining baselines from the paper will be added to the series once UniVAD reproduction is complete.
 
 ## Status
 
@@ -109,7 +109,8 @@ python data/mvtec_loco_solver.py
 Download from [OneDrive](https://1drv.ms/u/s!AopsN_HMhJeckoJT-3yF_pwQMSn9OA?e=nRW1wA) and extract to `data/`. Includes BrainMRI, LiverCT, and RetinalOCT pre-formatted in MVTec layout.
 
 ### Expected layout
-...
+
+```bash
 data/
 ├── mvtec/
 │   ├── meta.json
@@ -128,7 +129,7 @@ data/
 │   └── ground_truth/
 ├── LiverCT/
 └── RetinalOCT/
-...
+```
 
 ## Run
 
