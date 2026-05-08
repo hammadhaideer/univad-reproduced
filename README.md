@@ -109,7 +109,7 @@ python data/mvtec_loco_solver.py
 Download from [OneDrive](https://1drv.ms/u/s!AopsN_HMhJeckoJT-3yF_pwQMSn9OA?e=nRW1wA) and extract to `data/`. Includes BrainMRI, LiverCT, and RetinalOCT pre-formatted in MVTec layout.
 
 ### Expected layout
-
+...
 data/
 ├── mvtec/
 │   ├── meta.json
@@ -128,6 +128,7 @@ data/
 │   └── ground_truth/
 ├── LiverCT/
 └── RetinalOCT/
+...
 
 ## Run
 
