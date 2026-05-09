@@ -11,7 +11,7 @@ class MVTecSolver(object):
         "grid",
         "hazelnut",
         "leather",
-        "metal nut",
+        "metal_nut",
         "pill",
         "screw",
         "tile",
