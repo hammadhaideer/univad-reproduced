@@ -18,9 +18,9 @@ This is the fifth reproduction in a series covering UniVAD's full comparison set
 
 ## Status
 
-Environment configured. Pretrained checkpoints ready. Dataset preparation in progress.
+Industrial datasets prepared and indexed (MVTec-AD, VisA in 1cls format, MVTec LOCO with merged Caption masks). meta.json files generated for all three. Pretrained checkpoints in place. Medical datasets queued for download from the BMAD OneDrive. Component segmentation pre-computation and baseline runs pending.
 
-Results will be added to the table below as experiments complete.
+Results will land in the table below as experiments complete.
 
 ## Goal
 
@@ -33,7 +33,7 @@ Match the paper's reported 1-shot numbers within ±0.5 points across all six eva
 | Logical | MVTec LOCO | 71.0 | TBD | 75.1 | TBD |
 | Medical | BrainMRI | 80.2 | TBD | 96.8 | TBD |
 | Medical | LiverCT | 70.0 | TBD | 96.3 | TBD |
-| Medical | RetinalOCT | 85.5 | TBD | 94.9 | TBD |
+| Medical | RESC | 85.5 | TBD | 94.9 | TBD |
 
 All evaluations use the **1-normal-shot** setting: one normal reference image per category, no training on target domain data.
 
@@ -43,18 +43,18 @@ The standard approach to visual anomaly detection trains one model per object ca
 
 UniVAD is the paper that breaks this constraint cleanly. One frozen backbone. A few reference images. Any domain. No retraining.
 
-For this series specifically: UniVAD's freeze-and-infer design is also its main limitation. It assumes the deployment distribution stays fixed after the reference images are indexed. In practice, new product lines arrive, scanners get upgraded, patient cohorts shift. The model has no mechanism to adjust. This reproduction measures exactly how much performance degrades under that assumption, the numbers here are the lower bound that CTTA-AD is built to improve.
+For this series specifically: UniVAD's freeze-and-infer design is also its main limitation. It assumes the deployment distribution stays fixed after the reference images are indexed. In practice, new product lines arrive, scanners get upgraded, patient cohorts shift. The model has no mechanism to adjust. This reproduction measures exactly how much performance degrades under that assumption, the numbers here are the lower bound that any continual-adaptation extension is built to improve.
 
 ## Installation
 
 ```bash
-git clone https://github.com/hammadhaideer/univad-reproduced.git
+git clone --recurse-submodules https://github.com/hammadhaideer/univad-reproduced.git
 cd univad-reproduced
 conda env create -f environment.yml
 conda activate univad
 ```
 
-Install GroundingDINO:
+Install GroundingDINO (vendored as a submodule):
 
 ```bash
 cd models/GroundingDINO
@@ -87,26 +87,52 @@ DINOv2 and CLIP weights download automatically on first run.
 
 ## Datasets
 
+Three of the four dataset groups need a reorganization step before UniVAD can read them. The scripts under `scripts/` handle that.
+
 ### MVTec-AD
-Download from the [official page](https://www.mvtec.com/company/research/datasets/mvtec-ad), extract to `data/mvtec/`, then generate the meta file:
+
+Download from the [official page](https://www.mvtec.com/company/research/datasets/mvtec-ad), extract to `data/mvtec/`. Then:
+
 ```bash
-python data/mvtec_solver.py
+python scripts/mvtec_solver.py
 ```
 
+Note: UniVAD's upstream `mvtec_solver.py` lists `"metal nut"` (with a space) in `CLSNAMES`, but the official MVTec folder is `metal_nut` (with an underscore). This repo ships the patched version that matches the folder name.
+
 ### VisA
-Download from [Amazon S3](https://amazon-visual-anomaly.s3.us-west-2.amazonaws.com/VisA_20220922.tar), follow the [1-class format instructions](https://github.com/amazon-science/spot-diff?tab=readme-ov-file#data-preparation), place in `data/VisA_pytorch/1cls/`, then:
+
+Download from [Amazon S3](https://amazon-visual-anomaly.s3.us-west-2.amazonaws.com/VisA_20220922.tar) and extract. The raw layout (`<class>/Data/Images/{Anomaly,Normal}`) is not what UniVAD reads. Convert it to the 1-class MVTec-style layout used by spot-diff:
+
 ```bash
-python data/visa_solver.py
+python scripts/visa_to_1cls.py \
+  --data-folder /path/to/VisA_20220922 \
+  --save-folder data/VisA_pytorch \
+  --split-file /path/to/VisA_20220922/split_csv/1cls.csv
+```
+
+This mirrors `amazon-science/spot-diff` `prepare_data.py` for `--split-type 1cls`. The output goes to `data/VisA_pytorch/1cls/`. Then:
+
+```bash
+python scripts/visa_solver.py
 ```
 
 ### MVTec LOCO
-Use the [MVTec LOCO Caption](https://github.com/hujiecpp/MVTec-Caption) variant with merged ground-truth masks, place in `data/mvtec_loco_caption/`, then:
+
+Download raw [MVTec LOCO AD](https://www.mvtec.com/company/research/datasets/mvtec-loco), extract to `data/mvtec_loco_caption/`. UniVAD reads the *Caption* variant: a single binary mask per defect image, rather than the multiple component masks the raw release ships. Build the merged masks in place:
+
 ```bash
-python data/mvtec_loco_solver.py
+python scripts/loco_merge.py --root data/mvtec_loco_caption
+```
+
+The script OR-merges per-component masks for each defect image and writes them to `<class>/ground_truth_merge_mask/<defect>_merge_mask/<id>.png`. It mirrors `hujiecpp/MVTec-Caption` `Construct_MVTEC-LOCO-Caption.py`. Then:
+
+```bash
+python scripts/mvtec_loco_solver.py
 ```
 
 ### BMAD (Medical)
-Download from [OneDrive](https://1drv.ms/u/s!AopsN_HMhJeckoJT-3yF_pwQMSn9OA?e=nRW1wA) and extract to `data/`. Includes BrainMRI, LiverCT, and RetinalOCT pre-formatted in MVTec layout.
+
+Download from the BMAD-derived [OneDrive](https://1drv.ms/u/s!AopsN_HMhJeckoJT-3yF_pwQMSn9OA?e=nRW1wA) provided by the UniVAD authors and extract to `data/`. The pack is BMAD pre-organized in MVTec-style layout. UniVAD's `data/` structure expects six folders, exact case-sensitive names: `BrainMRI`, `LiverCT`, `RESC`, `HIS`, `ChestXray`, `OCT17`. No solver script is needed — `meta.json` ships with the pack for each dataset.
 
 ### Expected layout
 
@@ -121,44 +147,48 @@ data/
 │   └── ... (12 categories)
 ├── mvtec_loco_caption/
 │   ├── meta.json
-│   └── ... (5 categories)
+│   └── ... (5 categories, each with ground_truth/ + ground_truth_merge_mask/)
 ├── BrainMRI/
 │   ├── meta.json
 │   ├── train/
 │   ├── test/
 │   └── ground_truth/
 ├── LiverCT/
-└── RetinalOCT/
+├── RESC/
+├── HIS/
+├── ChestXray/
+└── OCT17/
 ```
-
 ## Run
 
 Pre-compute component segmentation masks for all datasets before evaluation:
 
 ```bash
-python segment_components.py
+python scripts/segment_components.py
 ```
 
 Run full evaluation:
 
 ```bash
-bash test.sh
+bash scripts/test.sh
 ```
 
 Or evaluate a single dataset:
 
 ```bash
-python test_univad.py --dataset mvtec --shot 1
-python test_univad.py --dataset visa --shot 1
-python test_univad.py --dataset mvtec_loco --shot 1
-python test_univad.py --dataset brainmri --shot 1
+python scripts/test_univad.py --dataset mvtec --shot 1
+python scripts/test_univad.py --dataset visa --shot 1
+python scripts/test_univad.py --dataset mvtec_loco --shot 1
+python scripts/test_univad.py --dataset brainmri --shot 1
 ```
 
 ## Roadmap
 
 - [x] Environment setup — torch 2.2.0, GroundingDINO, SAM-HQ
 - [x] Pretrained checkpoints — GroundingDINO SwinT, SAM-HQ ViT-H
-- [ ] Dataset preparation — MVTec-AD, VisA, MVTec LOCO, BMAD
+- [x] Industrial dataset preparation — MVTec-AD, VisA (1cls), MVTec LOCO Caption
+- [x] meta.json indexing for industrial datasets
+- [ ] Medical dataset preparation — BMAD (6 sets)
 - [ ] Component segmentation pre-computation
 - [ ] Baseline reproduction — MVTec-AD 1-shot
 - [ ] Baseline reproduction — VisA, MVTec LOCO, BMAD
@@ -174,7 +204,6 @@ python test_univad.py --dataset brainmri --shot 1
 - [x] [uniad-reproduced](https://github.com/hammadhaideer/uniad-reproduced) — UniAD (NeurIPS 2022)
 - [x] [medclip-reproduced](https://github.com/hammadhaideer/medclip-reproduced) — MedCLIP (EMNLP 2022)
 - [ ] **univad-reproduced** — UniVAD (CVPR 2025) ← this repo
-- [ ] ctta-ad — CTTA-AD (in development) ← research contribution
 
 ## References
 
