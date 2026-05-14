@@ -191,14 +191,14 @@ python scripts/test_univad.py --dataset brainmri --shot 1
 
 ## Roadmap
 
-- [x] Environment setup — torch 2.0.1, GroundingDINO, SAM-HQ
-- [x] Pretrained checkpoints — GroundingDINO SwinT, SAM-HQ ViT-H
-- [x] Industrial dataset preparation — MVTec-AD, VisA (1cls), MVTec LOCO Caption
+- [x] Environment setup --- torch 2.0.1, GroundingDINO, SAM-HQ
+- [x] Pretrained checkpoints --- GroundingDINO SwinT, SAM-HQ ViT-H
+- [x] Industrial dataset preparation --- MVTec-AD, VisA (1cls), MVTec LOCO Caption
 - [x] meta.json indexing for industrial datasets
-- [ ] Medical dataset preparation — BMAD (6 sets)
+- [ ] Medical dataset preparation --- BMAD (6 sets)
 - [ ] Component segmentation pre-computation
-- [ ] Baseline reproduction — MVTec-AD 1-shot
-- [ ] Baseline reproduction — VisA, MVTec LOCO, BMAD
+- [ ] Baseline reproduction --- MVTec-AD 1-shot
+- [ ] Baseline reproduction --- VisA, MVTec LOCO, BMAD
 - [ ] Sequential shift motivation experiment (S1/S2/S3 protocols)
 - [ ] Results table complete
 - [ ] Walkthrough notebook
@@ -209,7 +209,7 @@ python scripts/test_univad.py --dataset brainmri --shot 1
 - [x] [winclip-reproduced](https://github.com/hammadhaideer/winclip-reproduced) --- WinCLIP (CVPR 2023)
 - [x] [uniad-reproduced](https://github.com/hammadhaideer/uniad-reproduced) --- UniAD (NeurIPS 2022)
 - [x] [medclip-reproduced](https://github.com/hammadhaideer/medclip-reproduced) --- MedCLIP (EMNLP 2022)
-- [ ] **univad-reproduced** — UniVAD (CVPR 2025) ← this repo
+- [ ] **univad-reproduced** --- UniVAD (CVPR 2025) ← this repo
 
 ## References
 
