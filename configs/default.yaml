@@ -1,15 +1,18 @@
-dataset: mvtec 
-shot: 1 
-image_size: 448 
-batch_size: 1 
-backbone: 
-  vision_encoder: dinov2_vitg14 
-  text_encoder: clip_l14_336 
-  frozen: true 
-paths: 
-  data_root: data/ 
-  results_root: results/ 
-  pretrained_ckpts: pretrained_ckpts/ 
-  masks_root: masks/ 
-evaluation: 
-  metrics: [image_auroc, pixel_auroc] 
+dataset: mvtec
+shot: 1
+image_size: 448
+batch_size: 1
+
+backbone:
+  vision_encoder: dinov2_vitg14
+  text_encoder: clip_l14_336
+  frozen: true
+
+paths:
+  data_root: data/
+  results_root: results/
+  pretrained_ckpts: pretrained_ckpts/
+  masks_root: masks/
+
+evaluation:
+  metrics: [image_auroc, pixel_auroc, pro]
