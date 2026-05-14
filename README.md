@@ -3,16 +3,16 @@
 Clean reproduction of UniVAD (Gu et al., CVPR 2025) on MVTec-AD, VisA, MVTec LOCO, and BMAD. A training-free unified few-shot visual anomaly detection across industrial, logical, and medical domains.
 
 ![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![PyTorch](https://img.shields.io/badge/PyTorch-2.2.0-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.0.1-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
-**Paper:** UniVAD: A Training-free Unified Model for Few-shot Visual Anomaly Detection — Gu et al., CVPR 2025 · [arXiv:2412.03342](https://arxiv.org/abs/2412.03342)
+**Paper:** UniVAD: A Training-free Unified Model for Few-shot Visual Anomaly Detection --- Gu et al., CVPR 2025 · [arXiv:2412.03342](https://arxiv.org/abs/2412.03342)
 
 ## What this is
 
 End-to-end reproduction of UniVAD, the first model that is simultaneously source-free, few-shot, and unified across industrial, logical, and medical anomaly detection. Prior unified models like UniAD require large amounts of normal training data per category. Prior few-shot detectors like AnomalyDINO and WinCLIP cover only industrial benchmarks. UniVAD removes both constraints: a frozen DINOv2/CLIP backbone paired with a handful of normal reference images handles all three domains without any offline training on the target domain.
 
-The model operates through three modules. C³ (Contextual Component Clustering) combines Grounded SAM with K-means clustering to segment object components under few-shot conditions. CAPM (Component-Aware Patch Matching) restricts patch-level feature matching to within-component regions, eliminating false positives from background and irrelevant regions. GECM (Graph-Enhanced Component Modeling) builds a graph over component features and uses geometric and deep features jointly to catch logical anomalies, missing parts, wrong colors, incorrect counts that patch matching alone cannot detect.
+The model operates through three modules. C³ (Contextual Component Clustering) combines Grounded SAM with K-means clustering to segment object components under few-shot conditions. CAPM (Component-Aware Patch Matching) restricts patch-level feature matching to within-component regions, eliminating false positives from background and irrelevant regions. GECM (Graph-Enhanced Component Modeling) builds a graph over component features and uses geometric and deep features jointly to catch logical anomalies, missing parts, wrong colors, and incorrect counts that patch matching alone cannot detect.
 
 This is the fifth reproduction in a series covering UniVAD's full comparison set. UniVAD is the current state-of-the-art training-free unified VAD model and the natural endpoint of this series. Every earlier reproduction (PatchCore, WinCLIP, UniAD, MedCLIP) is a method UniVAD directly compares against in the paper. Getting clean numbers on all of them in one place makes the comparison meaningful. The remaining baselines from the paper will be added to the series once UniVAD reproduction is complete.
 
@@ -62,6 +62,14 @@ pip install -e . --no-build-isolation
 cd ../..
 ```
 
+Clone the DINOv2 model definition (required, weights do not download automatically):
+
+```bash
+git clone https://github.com/facebookresearch/dinov2.git models/dinov2
+```
+
+CLIP weights download automatically on first run via OpenCLIP.
+
 ## Pretrained Checkpoints
 
 Download both checkpoints to `pretrained_ckpts/` before running:
@@ -77,8 +85,6 @@ curl -L -C - -o sam_hq_vit_h.pth \
 curl -L -o groundingdino_swint_ogc.pth \
   "https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth"
 ```
-
-DINOv2 and CLIP weights download automatically on first run.
 
 | Checkpoint | Size | Purpose |
 |-----------|------|---------|
@@ -132,7 +138,7 @@ python scripts/mvtec_loco_solver.py
 
 ### BMAD (Medical)
 
-Download from the BMAD-derived [OneDrive](https://1drv.ms/u/s!AopsN_HMhJeckoJT-3yF_pwQMSn9OA?e=nRW1wA) provided by the UniVAD authors and extract to `data/`. The pack is BMAD pre-organized in MVTec-style layout. UniVAD's `data/` structure expects six folders, exact case-sensitive names: `BrainMRI`, `LiverCT`, `RESC`, `HIS`, `ChestXray`, `OCT17`. No solver script is needed — `meta.json` ships with the pack for each dataset.
+Download from the BMAD-derived [OneDrive](https://1drv.ms/u/s!AopsN_HMhJeckoJT-3yF_pwQMSn9OA?e=nRW1wA) provided by the UniVAD authors and extract to `data/`. The pack is BMAD pre-organized in MVTec-style layout. UniVAD's `data/` structure expects six folders with exact case-sensitive names: `BrainMRI`, `LiverCT`, `RESC`, `HIS`, `ChestXray`, `OCT17`. No solver script is needed — `meta.json` ships with the pack for each dataset.
 
 ### Expected layout
 
@@ -159,6 +165,7 @@ data/
 ├── ChestXray/
 └── OCT17/
 ```
+
 ## Run
 
 Pre-compute component segmentation masks for all datasets before evaluation:
@@ -184,7 +191,7 @@ python scripts/test_univad.py --dataset brainmri --shot 1
 
 ## Roadmap
 
-- [x] Environment setup — torch 2.2.0, GroundingDINO, SAM-HQ
+- [x] Environment setup — torch 2.0.1, GroundingDINO, SAM-HQ
 - [x] Pretrained checkpoints — GroundingDINO SwinT, SAM-HQ ViT-H
 - [x] Industrial dataset preparation — MVTec-AD, VisA (1cls), MVTec LOCO Caption
 - [x] meta.json indexing for industrial datasets
@@ -195,14 +202,13 @@ python scripts/test_univad.py --dataset brainmri --shot 1
 - [ ] Sequential shift motivation experiment (S1/S2/S3 protocols)
 - [ ] Results table complete
 - [ ] Walkthrough notebook
-- [ ] Medium walkthrough post
 
 ## Reproduction series
 
-- [x] [patchcore-reproduced](https://github.com/hammadhaideer/patchcore-reproduced) — PatchCore (CVPR 2022)
-- [x] [winclip-reproduced](https://github.com/hammadhaideer/winclip-reproduced) — WinCLIP (CVPR 2023)
-- [x] [uniad-reproduced](https://github.com/hammadhaideer/uniad-reproduced) — UniAD (NeurIPS 2022)
-- [x] [medclip-reproduced](https://github.com/hammadhaideer/medclip-reproduced) — MedCLIP (EMNLP 2022)
+- [x] [patchcore-reproduced](https://github.com/hammadhaideer/patchcore-reproduced) --- PatchCore (CVPR 2022)
+- [x] [winclip-reproduced](https://github.com/hammadhaideer/winclip-reproduced) --- WinCLIP (CVPR 2023)
+- [x] [uniad-reproduced](https://github.com/hammadhaideer/uniad-reproduced) --- UniAD (NeurIPS 2022)
+- [x] [medclip-reproduced](https://github.com/hammadhaideer/medclip-reproduced) --- MedCLIP (EMNLP 2022)
 - [ ] **univad-reproduced** — UniVAD (CVPR 2025) ← this repo
 
 ## References
