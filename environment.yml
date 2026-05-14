@@ -1,23 +1,27 @@
-name: univad 
-channels: 
-  - pytorch 
-  - conda-forge 
-  - defaults 
-dependencies: 
-  - python=3.9 
-  - pip 
-  - pip: 
-    - torch==2.2.0 
-    - torchvision==0.17.0 
-    - transformers==4.57.6 
-    - timm==1.0.26 
-    - scikit-learn 
-    - scipy 
-    - numpy==1.26.4 
-    - Pillow 
-    - opencv-python 
-    - tqdm 
-    - PyYAML 
-    - einops 
-    - faiss-cpu 
-    - matplotlib 
+name: univad
+
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.9
+  - pip
+  - pip:
+      - torch==2.0.1
+      - torchvision==0.15.2
+      - transformers>=4.40.0
+      - timm>=0.9.0
+      - scikit-learn
+      - scipy
+      - numpy==1.26.4
+      - Pillow
+      - opencv-python
+      - tqdm
+      - PyYAML
+      - einops
+      - faiss-cpu>=1.7.4
+      - matplotlib
+      - kornia
+      - segment-anything-hq
