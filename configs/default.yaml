@@ -14,12 +14,12 @@ paths:
   results_root: results/
   pretrained_ckpts: pretrained_ckpts/
   masks_root: masks/
+  heat_masks_root: heat_masks/
 
 evaluation:
   metrics: [image_auroc, pixel_auroc, pro]
-  # NOTE: pro metric is only meaningful for mvtec_loco dataset.
-  # The evaluation script must skip pro for all other datasets.
-  # This will be enforced when scripts/test_univad.py is audited.
+  # pro is meaningful only for mvtec_loco — enforced in test_univad.py
 
 device: cuda
 num_workers: 4
+use_crf: true
