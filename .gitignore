@@ -1,8 +1,48 @@
-*.pth 
-*.pyc 
-__pycache__/ 
-data/ 
-results/ 
-*.faiss 
-results/.gitkeep 
-!results/.gitkeep 
+# Model weights
+*.pth
+*.pt
+*.ckpt
+
+# Python
+*.pyc
+*.pyo
+__pycache__/
+*.egg-info/
+.eggs/
+
+# Datasets — downloaded by user, not committed
+data/
+
+# Results — directory is tracked, contents are not
+results/*
+!results/.gitkeep
+
+# Pre-computed segmentation masks — generated at runtime
+masks/
+
+# FAISS indices
+*.faiss
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# Environment files
+.env
+
+# Logs
+*.log
+
+# Experiment tracking
+wandb/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# IDEs
+.vscode/
+.idea/
+*.swp
