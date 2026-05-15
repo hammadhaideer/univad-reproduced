@@ -1,27 +1,69 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Local development environment — Windows, Mac, and Linux.
+#
+# Create and activate:
+#   conda env create -f environment.yml
+#   conda activate univad
+#
+# After creation, install GroundingDINO from the vendored submodule:
+#   cd models/GroundingDINO && pip install -e . --no-build-isolation && cd ../..
+#
+# MAC USERS — Edit the pip block before running conda env create:
+#   Remove the --extra-index-url line
+#   Replace torch==2.0.1+cu118  with  torch==2.0.1
+#   Replace torchvision==0.15.2+cu118  with  torchvision==0.15.2
+#
+# SERVER USERS — The server has no internet access. Do not run conda env create
+# there. Activate the existing base environment and install packages with pip.
+# Full server setup instructions are in the README.
+#
+# pydensecrf is intentionally omitted — no Windows wheel, fails on Mac without
+# Cython. Use the --no_crf flag when running evaluation scripts.
+# Linux server users who want CRF: pip install pydensecrf
+# ─────────────────────────────────────────────────────────────────────────────
+
 name: univad
 
 channels:
   - pytorch
+  - nvidia
   - conda-forge
   - defaults
 
 dependencies:
-  - python=3.9
+  - python=3.11
   - pip
+
+  # Scientific computing via conda — handles compiled C extensions reliably
+  - numpy=1.26.4
+  - scipy=1.13.0
+  - scikit-learn=1.4.2
+
   - pip:
-      - torch==2.0.1
-      - torchvision==0.15.2
-      - transformers>=4.40.0
-      - timm>=0.9.0
-      - scikit-learn
-      - scipy
-      - numpy==1.26.4
-      - Pillow
-      - opencv-python
-      - tqdm
-      - PyYAML
-      - einops
-      - faiss-cpu>=1.7.4
-      - matplotlib
-      - kornia
-      - segment-anything-hq
+    # PyTorch CUDA 11.8 — Linux and Windows GPU users
+    # Mac users: remove --extra-index-url and replace +cu118 suffixes (see top)
+    - --extra-index-url https://download.pytorch.org/whl/cu118
+    - torch==2.0.1+cu118
+    - torchvision==0.15.2+cu118
+
+    # Vision and ML
+    - transformers==4.41.0
+    - timm==0.9.16
+
+    # Image processing
+    - Pillow==10.3.0
+    - opencv-python-headless==4.9.0.80
+
+    # Utilities
+    - tqdm==4.66.4
+    - PyYAML==6.0.1
+    - einops==0.7.0
+    - matplotlib==3.9.0
+    - kornia==0.7.3
+    - tabulate==0.9.0
+
+    # Nearest-neighbour search
+    - faiss-cpu==1.8.0
+
+    # Segment Anything HQ
+    - segment-anything-hq==0.3.0
