@@ -19,6 +19,7 @@ results/*
 
 # Pre-computed segmentation masks — generated at runtime
 masks/
+heat_masks/
 
 # FAISS indices
 *.faiss
