@@ -2,6 +2,7 @@ dataset: mvtec
 shot: 1
 image_size: 448
 batch_size: 1
+seed: 42
 
 backbone:
   vision_encoder: dinov2_vitg14
@@ -16,3 +17,9 @@ paths:
 
 evaluation:
   metrics: [image_auroc, pixel_auroc, pro]
+  # NOTE: pro metric is only meaningful for mvtec_loco dataset.
+  # The evaluation script must skip pro for all other datasets.
+  # This will be enforced when scripts/test_univad.py is audited.
+
+device: cuda
+num_workers: 4
