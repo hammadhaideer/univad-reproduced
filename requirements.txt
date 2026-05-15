@@ -1,16 +1,49 @@
-torch==2.0.1
-torchvision==0.15.2
-transformers>=4.40.0
-timm>=0.9.0
-scikit-learn
-scipy
+# ─────────────────────────────────────────────────────────────────────────────
+# STEP 1 — Install PyTorch before running pip install -r requirements.txt.
+# PyTorch CUDA builds are not on PyPI. Pick the command for your hardware:
+#
+#   CUDA 11.8 (Linux server / GPU machine):
+#   pip install torch==2.0.1+cu118 torchvision==0.15.2+cu118 --index-url https://download.pytorch.org/whl/cu118
+#
+#   CUDA 12.1:
+#   pip install torch==2.0.1+cu121 torchvision==0.15.2+cu121 --index-url https://download.pytorch.org/whl/cu121
+#
+#   CPU only (Windows / Mac local testing, no GPU):
+#   pip install torch==2.0.1 torchvision==0.15.2
+#
+# STEP 2 — Install GroundingDINO from the vendored submodule:
+#   cd models/GroundingDINO && pip install -e . --no-build-isolation && cd ../..
+#
+# STEP 3 — Then install everything below:
+#   pip install -r requirements.txt
+#
+# NOTE — pydensecrf is intentionally omitted. It has no Windows wheel and
+# fails on Mac without a Cython build environment. Use the --no_crf flag
+# when running evaluation scripts. Linux server users who want CRF can run:
+#   pip install pydensecrf
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Vision and ML
+transformers==4.41.0
+timm==0.9.16
+scikit-learn==1.4.2
+scipy==1.13.0
 numpy==1.26.4
-Pillow
-opencv-python
-tqdm
-PyYAML
-einops
-faiss-cpu>=1.7.4
-matplotlib
-kornia
-segment-anything-hq
+
+# Image processing
+Pillow==10.3.0
+opencv-python-headless==4.9.0.80
+
+# Utilities
+tqdm==4.66.4
+PyYAML==6.0.1
+einops==0.7.0
+matplotlib==3.9.0
+kornia==0.7.3
+tabulate==0.9.0
+
+# Nearest-neighbour search
+faiss-cpu==1.8.0
+
+# Segment Anything HQ
+segment-anything-hq==0.3.0
