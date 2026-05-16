@@ -152,7 +152,8 @@ class UniVAD(nn.Module):
         backbone:        str  = "dinov2_vitg14",
         use_crf:         bool = True,
         masks_root:      str  = "masks",
-        heat_masks_root: str  = "heat_masks",
+        heat_masks_root:  str  = "heat_masks",
+        pretrained_ckpts: str  = "pretrained_ckpts",
     ) -> None:
         super().__init__()
 
@@ -160,7 +161,8 @@ class UniVAD(nn.Module):
         self.device          = torch.device(device)
         self.use_crf         = use_crf
         self.masks_root      = masks_root
-        self.heat_masks_root = heat_masks_root
+        self.heat_masks_root  = heat_masks_root
+        self.pretrained_ckpts = pretrained_ckpts
 
         # ── CLIP ────────────────────────────────────────────────────────
         clip_name = "ViT-L-14-336"
@@ -173,7 +175,7 @@ class UniVAD(nn.Module):
         self.tokenizer = open_clip.get_tokenizer(clip_name)
 
         # ── DINOv2 ──────────────────────────────────────────────────────
-        self.dino_net = DinoFeaturizer().eval()
+        self.dino_net = DinoFeaturizer(device=str(self.device), pretrained_ckpts=self.pretrained_ckpts).eval()
         self.dinov2_net = torch.hub.load(
             "./models/dinov2", backbone, pretrained=True, source="local"
         ).to(self.device).eval()
@@ -805,7 +807,6 @@ def assign_fine_to_coarse_torch(
 
     for fi in range(N):
         if N > 1:
-            # Skip masks that span the full image corners — likely background.
             if fine_masks[fi][0, 0] and fine_masks[fi][H - 1, W - 1]:
                 continue
             if fine_masks[fi][10, 10] and fine_masks[fi][H - 10, W - 10]:
