@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from utils.comad_utils import *
+from src.comad_utils import *
 from models.dino import vision_transformer as vits
 
 
