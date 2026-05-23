@@ -210,7 +210,7 @@ def remove_axes(axes):
             _remove_axes(ax)
 
 
-class UnsupervisedMetrics(Metric):
+class UnsupervisedMetrics(Metric if _TORCHMETRICS_AVAILABLE else object):
     def __init__(self, prefix: str, n_classes: int, extra_clusters: int, compute_hungarian: bool,
                  dist_sync_on_step=True):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
