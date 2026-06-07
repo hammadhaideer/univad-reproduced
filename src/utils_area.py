@@ -1,10 +1,11 @@
 import glob
+import os
+
 import cv2
 import numpy as np
 from sklearn import metrics
 from sklearn.cluster import DBSCAN
 from sklearn.neighbors import NearestNeighbors
-import time
 
 
 def predict_label(new_data, nn, dbscan):
@@ -12,13 +13,12 @@ def predict_label(new_data, nn, dbscan):
         label_final = 0
     else:
         dis, indices = nn.kneighbors(new_data)
-        # dis_mean = np.mean(dis)
         c = dbscan.labels_[indices][0, :]
-        d = c + 1  # avoid negative -1
+        d = c + 1
         counts = np.bincount(d)
         max_idx = np.argmax(counts)
         label_final = max_idx - 1
-    return label_final, None  # dis_mean
+    return label_final, None
 
 
 def predict_label_histo(new_data, nn):
@@ -29,9 +29,9 @@ def predict_label_histo(new_data, nn):
 
 def get_area_only_histo(testlogicalfiles, subimage, k_offset, dbscan, nn):
     histo_list = []
-    noise_size = 50  # 224*224*0.001
+    noise_size = 50
     for imgfilepath in testlogicalfiles:
-        img_path = f"{imgfilepath}/heatresult{subimage}.jpg"
+        img_path = os.path.join(imgfilepath, f"heatresult{subimage}.jpg")
         gray_img = cv2.imread(img_path, 0)
         gray_cal_otsu = gray_img[
             10 : gray_img.shape[0] - 10, 10 : gray_img.shape[0] - 10
@@ -65,7 +65,7 @@ def get_area_only_histo(testlogicalfiles, subimage, k_offset, dbscan, nn):
 def get_area_list_new(trainfiles, subimage, k_offset):
     arealist = []
     for imgfilepath in trainfiles:
-        img_path = f"{imgfilepath}/heatresult{subimage}.jpg"
+        img_path = os.path.join(imgfilepath, f"heatresult{subimage}.jpg")
         gray_img = cv2.imread(img_path, 0)
         gray_cal_otsu = gray_img[
             10 : gray_img.shape[0] - 10, 10 : gray_img.shape[0] - 10
@@ -80,7 +80,7 @@ def get_area_list_new(trainfiles, subimage, k_offset):
         stats = output[2]
         for i in range(1, output[0]):
             area = stats[i, cv2.CC_STAT_AREA]
-            if area > 50:  # 224*224*0.001
+            if area > 50:
                 arealist.append([area])
     return arealist
 
@@ -89,7 +89,7 @@ def train_select_binary_offsets(trainfiles, subimage):
     arealist = []
     k_offsets = [1.1, 1.2, 1.3, 1.4]
     for imgfilepath in trainfiles:
-        img_path = f"{imgfilepath}/heatresult{subimage}.jpg"
+        img_path = os.path.join(imgfilepath, f"heatresult{subimage}.jpg")
         gray_img = cv2.imread(img_path, 0)
         gray_cal_otsu = gray_img[
             10 : gray_img.shape[0] - 10, 10 : gray_img.shape[0] - 10
@@ -102,7 +102,9 @@ def train_select_binary_offsets(trainfiles, subimage):
         arealist_perk = []
         arealist_perk.append(area)
         for k in k_offsets:
-            ret2, thresh2 = cv2.threshold(gray_img, int(k * ret), 1, cv2.THRESH_BINARY)
+            ret2, thresh2 = cv2.threshold(
+                gray_img, int(k * ret), 1, cv2.THRESH_BINARY
+            )
             area_k = np.sum(thresh2)
             arealist_perk.append(area_k)
         arealist.append(arealist_perk)
@@ -117,12 +119,10 @@ def train_select_binary_offsets(trainfiles, subimage):
     return area_numpy_return, area_mean[index], area_std[index], k_offsets_final[index]
 
 
-
-
 def train_area_connect(trainfiles, subimage):
     arealist_perk = []
     for imgfilepath in trainfiles:
-        img_path = f"{imgfilepath}/heatresult{subimage}.jpg"
+        img_path = os.path.join(imgfilepath, f"heatresult{subimage}.jpg")
         gray_img = cv2.imread(img_path, 0)
         gray_cal_otsu = gray_img[
             10 : gray_img.shape[0] - 10, 10 : gray_img.shape[0] - 10
@@ -146,8 +146,8 @@ def test_select_binary_offsets(
     arealist = []
     colorlist = []
     for imgfilepath in testfiles:
-        img_path = f"{imgfilepath}/heatresult{subimage}.jpg"
-        ori_img_path = f"{imgfilepath}/img.jpg"
+        img_path = os.path.join(imgfilepath, f"heatresult{subimage}.jpg")
+        ori_img_path = os.path.join(imgfilepath, "img.jpg")
         gray_img = cv2.imread(img_path, 0)
         rgb_img = cv2.imread(ori_img_path)
         imglabo = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2LAB)
@@ -189,16 +189,6 @@ def test_select_binary_offsets(
 def compute_imagewise_retrieval_metrics(
     anomaly_prediction_weights, anomaly_ground_truth_labels
 ):
-    """
-    Computes retrieval statistics (AUROC, FPR, TPR).
-
-    Args:
-        anomaly_prediction_weights: [np.array or list] [N] Assignment weights
-                                    per image. Higher indicates higher
-                                    probability of being an anomaly.
-        anomaly_ground_truth_labels: [np.array or list] [N] Binary labels - 1
-                                    if image is an anomaly, 0 if not.
-    """
     fpr, tpr, thresholds = metrics.roc_curve(
         anomaly_ground_truth_labels, anomaly_prediction_weights
     )
