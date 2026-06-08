@@ -14,6 +14,7 @@ class VisaDataset(data.Dataset):
         root,
         transform,
         target_transform,
+        aug_rate=-1,
         mode='test',
         k_shot=0,
         save_dir=None,
