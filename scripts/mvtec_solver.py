@@ -1,8 +1,8 @@
-import os
 import json
+import os
 
 
-class MVTecSolver(object):
+class MVTecSolver:
     CLSNAMES = [
         "bottle",
         "cable",
@@ -21,32 +21,35 @@ class MVTecSolver(object):
         "zipper",
     ]
 
-    def __init__(self, root="./mvtec"):
+    def __init__(self, root="./data/mvtec"):
         self.root = root
-        self.meta_path = f"{root}/meta.json"
+        self.meta_path = os.path.join(root, "meta.json")
 
     def run(self):
         info = dict(train={}, test={})
         for cls_name in self.CLSNAMES:
-            cls_dir = f"{self.root}/{cls_name}"
+            cls_dir = os.path.join(self.root, cls_name)
             for phase in ["train", "test"]:
                 cls_info = []
-                species = os.listdir(f"{cls_dir}/{phase}")
+                species = os.listdir(os.path.join(cls_dir, phase))
                 for specie in species:
-                    is_abnormal = True if specie not in ["good"] else False
-                    img_names = os.listdir(f"{cls_dir}/{phase}/{specie}")
+                    is_abnormal = specie not in ["good"]
+                    img_names = os.listdir(os.path.join(cls_dir, phase, specie))
                     mask_names = (
-                        os.listdir(f"{cls_dir}/ground_truth/{specie}")
+                        os.listdir(os.path.join(cls_dir, "ground_truth", specie))
                         if is_abnormal
                         else None
                     )
                     img_names.sort()
-                    mask_names.sort() if mask_names is not None else None
+                    if mask_names is not None:
+                        mask_names.sort()
                     for idx, img_name in enumerate(img_names):
                         info_img = dict(
-                            img_path=f"{cls_name}/{phase}/{specie}/{img_name}",
+                            img_path=os.path.join(cls_name, phase, specie, img_name),
                             mask_path=(
-                                f"{cls_name}/ground_truth/{specie}/{mask_names[idx]}"
+                                os.path.join(
+                                    cls_name, "ground_truth", specie, mask_names[idx]
+                                )
                                 if is_abnormal
                                 else ""
                             ),
