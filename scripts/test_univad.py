@@ -3,17 +3,14 @@ import logging
 import os
 import sys
 import threading
-import math
 
 import numpy as np
 import torch
-import torchvision
 import torchvision.transforms as transforms
 from tabulate import tabulate
 from sklearn.metrics import roc_auc_score
 from tqdm import tqdm
 from PIL import Image
-from prefetch_generator import BackgroundGenerator
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
@@ -29,12 +26,6 @@ from chestxray import ChestXrayDataset
 from oct17 import OCT17Dataset
 
 results_lock = threading.Lock()
-
-
-def resize_tokens(x):
-    B, N, C = x.shape
-    h = int(math.sqrt(N))
-    return x.view(B, h, h, C)
 
 
 def cal_score(obj, results, table_ls, auroc_sp_ls, auroc_px_ls):
@@ -84,7 +75,10 @@ if __name__ == "__main__":
     parser.add_argument("--round", type=int, default=3)
     parser.add_argument("--class_name", type=str, default="None")
     parser.add_argument("--device", type=str, default="cuda")
-    parser.add_argument("--num_workers", type=int, default=8)
+    parser.add_argument("--num_workers", type=int, default=4)
+    parser.add_argument("--backbone", type=str, default="dinov2_vitg14")
+    parser.add_argument("--no_crf", action="store_true",
+                        help="Disable CRF post-processing (required on Windows and Mac)")
     args = parser.parse_args()
 
     dataset_name = args.dataset
@@ -118,14 +112,17 @@ if __name__ == "__main__":
     for arg in vars(args):
         logger.info("%s: %s", arg, getattr(args, arg))
 
-    UniVAD_model = UniVAD(image_size=image_size).to(device)
+    UniVAD_model = UniVAD(
+        image_size=image_size,
+        device=device,
+        backbone=args.backbone,
+        use_crf=not args.no_crf,
+    )
 
     transform = transforms.Compose([
         transforms.Resize((image_size, image_size)),
         transforms.ToTensor(),
     ])
-
-    gaussion_filter = torchvision.transforms.GaussianBlur(3, 4.0)
 
     dataset_roots = {
         "mvtec":      os.path.join(data_path, "mvtec"),
@@ -160,6 +157,7 @@ if __name__ == "__main__":
         target_transform=transform,
         aug_rate=-1,
         mode="test",
+        image_size=image_size,
     )
 
     test_dataloader = torch.utils.data.DataLoader(
@@ -182,11 +180,6 @@ if __name__ == "__main__":
     }
 
     cls_last = None
-
-    image_transform = transforms.Compose([
-        transforms.Resize((image_size, image_size)),
-        transforms.ToTensor(),
-    ])
 
     for items in tqdm(test_dataloader):
         image = items["img"].to(device)
@@ -249,7 +242,7 @@ if __name__ == "__main__":
 
             normal_images = torch.cat(
                 [
-                    image_transform(Image.open(x).convert("RGB")).unsqueeze(0)
+                    transform(Image.open(x).convert("RGB")).unsqueeze(0)
                     for x in normal_image_paths
                 ],
                 dim=0,
